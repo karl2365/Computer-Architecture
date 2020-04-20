@@ -75,17 +75,21 @@ class CPU:
         # print(self.ram)
         while running:
             inst = self.ram[pc]
+
             if inst == self.LDI:
-                self.reg[pc+1] = self.ram[pc+2]
-                print(self.reg[pc+1])
+                self.reg[self.ram[pc+1]] = self.ram[pc+2]
+                # print(self.reg[pc+1])
                 pc += 3
+
             elif inst == self.PRN:
                 reg_num = self.ram[pc + 1]
-                print(reg_num)
+                # print(reg_num)
                 print(self.reg[reg_num])
                 pc += 2
+                
             elif inst == self.HLT:
                 running = False
+
             else:
                 print('instruction not found')
                 running = False
