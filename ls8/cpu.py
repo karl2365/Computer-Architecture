@@ -11,7 +11,7 @@ class CPU:
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.pc = 0
-        self.register = [0] * 8
+        self.reg = [0] * 8
         self.ram = [0] * 256
 
 
@@ -34,7 +34,8 @@ class CPU:
         ]
 
         for instruction in program:
-            self.ram[address] = instruction
+            self.ram[address] = instruction #instruction
+            # print(self.ram[address])
             address += 1
 
 
@@ -69,4 +70,24 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        pc = 0 
+        running = True
+        # print(self.ram)
+        while running:
+            inst = self.ram[pc]
+            if inst == self.LDI:
+                self.reg[pc+1] = self.ram[pc+2]
+                print(self.reg[pc+1])
+                pc += 3
+            elif inst == self.PRN:
+                reg_num = self.ram[pc + 1]
+                print(reg_num)
+                print(self.reg[reg_num])
+                pc += 2
+            elif inst == self.HLT:
+                running = False
+            else:
+                print('instruction not found')
+                running = False
+
+
