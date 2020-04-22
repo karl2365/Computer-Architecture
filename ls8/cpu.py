@@ -5,30 +5,41 @@ import sys
 class CPU:
     """Main CPU class."""
 
-    def __init__(self):
+    def __init__(self, file):
         """Construct a new CPU."""
-        pass
+        self.branchtable = {}
+        self.branchtable.LDI = 0b10000010
+        self.LDI = 0b10000010
+        self.HLT = 0b00000001
+        self.PRN = 0b01000111
+        self.MUL = 0b10100010
+        self.PUSH = 0b01000101
+        self.POP = 0b01000110
+        self.pc = 0
+        self.reg = [0] * 8
+        self.ram = [0] * 256
+        self.reg[7] = 0b11110100 
+        self.program_filename = file
+
+
 
     def load(self):
         """Load a program into memory."""
-
         address = 0
 
-        # For now, we've just hardcoded a program:
+        with open(self.program_filename) as f:
+            for line in f:
+                line = line.split('#')
+                line = line[0].strip()
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+                if line == '':
+                    continue
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                line = int(line, 2)
+                self.ram[address] = line
+
+                address += 1
+
 
 
     def alu(self, op, reg_a, reg_b):
@@ -37,6 +48,8 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -62,4 +75,51 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        pc = 0 
+        sc = 7
+        running = True
+        # print(self.ram)
+        while running:
+            inst = self.ram[pc]
+
+            if inst == self.LDI:
+                self.reg[self.ram[pc+1]] = self.ram[pc+2]
+                # print(self.reg[pc+1])
+                pc += 3
+
+            elif inst == self.PRN:
+                reg_num = self.ram[pc + 1]
+                # print(reg_num)
+                print(self.reg[reg_num])
+                pc += 2
+
+            elif inst == self.MUL:
+                reg_a = self.ram[pc+1]
+                reg_b = self.ram[pc+2]
+                self.alu('MUL', reg_a, reg_b)
+                pc += 3
+
+            elif inst == self.PUSH:
+                self.reg[sc] -= 1
+                reg_num = self.ram[pc + 1]
+                value = self.reg[reg_num]
+                address = self.reg[sc]
+                self.ram[address] = value
+                pc += 2
+
+            elif inst == self.POP:
+                reg_num = self.ram[pc + 1]
+                value = self.ram[self.reg[7]]
+                self.reg[reg_num] = value
+                self.reg[sc] += 1
+                pc += 2
+
+            elif inst == self.HLT:
+                running = False
+
+            else:
+                print(inst)
+                print('instruction not found')
+                running = False
+
+
