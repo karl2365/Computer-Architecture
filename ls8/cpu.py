@@ -7,6 +7,8 @@ class CPU:
 
     def __init__(self, file):
         """Construct a new CPU."""
+        self.branchtable = {}
+        self.branchtable.LDI = 0b10000010
         self.LDI = 0b10000010
         self.HLT = 0b00000001
         self.PRN = 0b01000111
@@ -38,22 +40,6 @@ class CPU:
 
                 address += 1
 
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
-
-        # for instruction in program:
-        #     self.ram[address] = instruction #instruction
-        #     # print(self.ram[address])
-        #     address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -90,6 +76,7 @@ class CPU:
     def run(self):
         """Run the CPU."""
         pc = 0 
+        sc = 7
         running = True
         # print(self.ram)
         while running:
@@ -113,10 +100,10 @@ class CPU:
                 pc += 3
 
             elif inst == self.PUSH:
-                self.reg[7] -= 1
+                self.reg[sc] -= 1
                 reg_num = self.ram[pc + 1]
                 value = self.reg[reg_num]
-                address = self.reg[7]
+                address = self.reg[sc]
                 self.ram[address] = value
                 pc += 2
 
@@ -124,9 +111,9 @@ class CPU:
                 reg_num = self.ram[pc + 1]
                 value = self.ram[self.reg[7]]
                 self.reg[reg_num] = value
-                self.reg[7] += 1
+                self.reg[sc] += 1
                 pc += 2
-                
+
             elif inst == self.HLT:
                 running = False
 
