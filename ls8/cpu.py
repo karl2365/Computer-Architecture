@@ -11,9 +11,12 @@ class CPU:
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.MUL = 0b10100010
+        self.PUSH = 0b01000101
+        self.POP = 0b01000110
         self.pc = 0
         self.reg = [0] * 8
         self.ram = [0] * 256
+        self.reg[7] = 0b11110100 
         self.program_filename = file
 
 
@@ -107,9 +110,23 @@ class CPU:
                 reg_a = self.ram[pc+1]
                 reg_b = self.ram[pc+2]
                 self.alu('MUL', reg_a, reg_b)
-                print(reg_a) 
                 pc += 3
 
+            elif inst == self.PUSH:
+                self.reg[7] -= 1
+                reg_num = self.ram[pc + 1]
+                value = self.reg[reg_num]
+                address = self.reg[7]
+                self.ram[address] = value
+                pc += 2
+
+            elif inst == self.POP:
+                reg_num = self.ram[pc + 1]
+                value = self.ram[self.reg[7]]
+                self.reg[reg_num] = value
+                self.reg[7] += 1
+                pc += 2
+                
             elif inst == self.HLT:
                 running = False
 
